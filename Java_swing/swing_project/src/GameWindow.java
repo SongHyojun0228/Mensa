@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class GameWindow extends JFrame {
     private GamePanel gamePanel;
 
+    // 11
     public GameWindow() {
         setTitle("게임");
         setSize(1280, 720);
