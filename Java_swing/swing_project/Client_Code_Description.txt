@@ -1,0 +1,52 @@
+[3월 23일 일요일]
+GameClient Code Description
+https://spotless-seeker-00f.notion.site/3-1b013ddc688b80c8a8a1df31f20351b2
+
+📌 상속 
+GameClient extends JFrame → 창을 생성하는 Swing 윈도우
+GamePanel extends JPanel implements KeyListener → 게임 UI와 입력 처리
+
+
+📌 Class 
+- GameClient : 창 생성 및 GamePanel 생성
+- GamePanel : Game paint, input 처리, 서버 통신
+- SkillEffect : X 키 눌렀을 때 스킬
+
+
+📌 Variable
+- characterX, charactery int, 플레이어 위치
+- facingRight : boolean, 플레이어 방향
+- playerHealth : int, 체력
+- pressedKeys : Set<String>, 현재 눌린 키 저장
+- enemies, bullets : List<Map<>>, 서버에서 받은 슬라임/총알 State
+- syncTimer : Timer, 50ms 간격으로 State Server 전송
+- animationTimer : Timer, 200ms 간격으로 플레이어 이동 프레임 전환 
+
+
+📌 Method 
+- connectToServer()
+    - Soket으로 서버와 연결
+    - Object Stream 설정
+
+- sendInput()
+    - 방향키 입력을 Server로 전송 (keys list)
+
+- sendAction(String)
+    - Z : "Attack"
+    - X : "skill"
+
+- updateGameState(Map)
+    -  Server로부터 받은 State update
+
+- paintComponent()
+    - 배경, 플레이어, 슬라임(몹), bullet, skill Effect paint
+
+- drawHealthBar 
+    - 플레이어의 체력 렌더링
+
+- keyPressed()
+    - 방향키 추가
+    - "Z", "X" action processing
+
+- SkillEffect
+    - X 키 누르면 생성되어 100ms 간격으로 애니메이션 프레임 전환 후 삭제

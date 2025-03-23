@@ -1,17 +1,17 @@
-import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import javax.imageio.ImageIO;
-import java.awt.event.KeyListener;
-import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class GameWindow extends JFrame {
     private GamePanel gamePanel;
