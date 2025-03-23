@@ -34,3 +34,12 @@ UI                  Java Swing Rendering          X
 - Server : 매 루프마다 움직이고 적과 충돌 여부 
 - Server --> Client 상태 전송 
 - Clinet : repaint(); 
+
+4. 실행
+// Run Server 
+javac GameServer.java
+java GameServer
+
+// Run Client
+javac GameClient.java
+java GameClient
