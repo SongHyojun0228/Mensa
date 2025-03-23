@@ -1,0 +1,36 @@
+3 / 19
+1. HP가 0됐을 때 죽는 + 종료화면 ( 3 / 19 )
+2. 몬스터가 공격에 맞으면 피 달고 죽는
+3. 공격 아이템 먹었을 때 차별화 ( 테크트리 ) 
+
+
+
+[3월 23일] 전체 구조 분리 (Client && Server)
+1. Frame 
+<역할>               <Client>                      <Server>
+UI                  Java Swing Rendering          X
+입력처리              키보드 입력                      Client 입력 처리
+로직                 X                             플레이어/몬스터 이동, 충돌 판정(데미지), 플레이어 공격 및 적중 판정 
+동기화               서버에서 받은 상태를 게임에 동기화     플레이어/몬스터 HP 계산 , 공격 상태를 Client에 전송
+
+2. 분리 
+2-1. Client
+- GamePnael은 유지하되, 게임 로직은 서버에서 처리하고 서버에서 받은 상태를 Swing으로 그려내는 역할로
+- KeyListener 유지, 처리는 서버에 맡기고 입력만 서버에 전송
+- 플레이어/몬스터/공격(Effect) 위치는 서버에서 주는 정보를 받아서 paintComponent()에서 그리기 
+
+2-2. Server
+- 게임루프 (Timer, Thread)
+- 클라이언트 입력 수신
+- 플레이어 위치 계산 
+- 몬스터 이동 처리 (towards the player)
+- 공격 및 피해(충동) 계산 및 판정
+- 게임 상태를 JSON이나 객체로 전송 
+
+3. EX
+- "Z" : 공격
+- Client --> Server "Attack" 전송 
+- Server : 공격(bullet) 객체 생성 및 추가
+- Server : 매 루프마다 움직이고 적과 충돌 여부 
+- Server --> Client 상태 전송 
+- Clinet : repaint(); 
