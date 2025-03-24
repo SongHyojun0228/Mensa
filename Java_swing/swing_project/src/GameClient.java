@@ -116,10 +116,16 @@ class GamePanel extends JPanel implements KeyListener {
 
     private void startTimers() {
         animationTimer = new Timer(200, e -> {
+            if (pressedKeys.isEmpty()) {
+                currentFrameImage = idleImage; // 키 안 누를 땐 idle 이미지
+                repaint();
+                return;
+            }
             currentFrame = (currentFrame + 1) % 6;
-            currentFrameImage = getCharacterFrame(currentFrame);
+            currentFrameImage = getCharacterFrame(currentFrame); // 뛰는 이미지
             repaint();
         });
+        
         animationTimer.start();
 
         syncTimer = new Timer(50, e -> sendInput());
