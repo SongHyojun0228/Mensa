@@ -228,30 +228,52 @@ class GamePanel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT -> pressedKeys.add("LEFT");
-            case KeyEvent.VK_RIGHT -> pressedKeys.add("RIGHT");
-            case KeyEvent.VK_UP -> pressedKeys.add("UP");
-            case KeyEvent.VK_DOWN -> pressedKeys.add("DOWN");
-            case KeyEvent.VK_Z -> sendAction("attack");
-            case KeyEvent.VK_X -> {
+            case KeyEvent.VK_LEFT:
+                pressedKeys.add("LEFT");
+                break;
+            case KeyEvent.VK_RIGHT:
+                pressedKeys.add("RIGHT");
+                break;
+            case KeyEvent.VK_UP:
+                pressedKeys.add("UP");
+                break;
+            case KeyEvent.VK_DOWN:
+                pressedKeys.add("DOWN");
+                break;
+            case KeyEvent.VK_Z:
+                sendAction("attack");
+                break;
+            case KeyEvent.VK_X: {
                 sendAction("skill");
                 int skillX = facingRight ? characterX + CHARACTER_WIDTH + 20 : characterX - BULLET_SIZE - 20;
                 int skillY = characterY + CHARACTER_HEIGHT / 2 - BULLET_SIZE / 2 - 20;
                 skillEffects.add(new SkillEffect(skillX, skillY, facingRight));
+                break;
             }
         }
     }
 
-    @Override public void keyReleased(KeyEvent e) {
+    @Override
+    public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT -> pressedKeys.remove("LEFT");
-            case KeyEvent.VK_RIGHT -> pressedKeys.remove("RIGHT");
-            case KeyEvent.VK_UP -> pressedKeys.remove("UP");
-            case KeyEvent.VK_DOWN -> pressedKeys.remove("DOWN");
+            case KeyEvent.VK_LEFT:
+                pressedKeys.remove("LEFT");
+                break;
+            case KeyEvent.VK_RIGHT:
+                pressedKeys.remove("RIGHT");
+                break;
+            case KeyEvent.VK_UP:
+                pressedKeys.remove("UP");
+                break;
+            case KeyEvent.VK_DOWN:
+                pressedKeys.remove("DOWN");
+                break;
         }
     }
 
-    @Override public void keyTyped(KeyEvent e) {}
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
 
     private class SkillEffect {
         int x, y, currentFrame = 0;
@@ -282,4 +304,4 @@ class GamePanel extends JPanel implements KeyListener {
             }
         }
     }
-} 
+}

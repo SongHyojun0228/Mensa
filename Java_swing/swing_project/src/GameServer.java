@@ -1,3 +1,4 @@
+
 // GameServer.java (슬라임 데미지 타이머 추가 - GameWindow와 HP 감소 속도 일치)
 import java.io.*;
 import java.net.*;
@@ -58,7 +59,7 @@ public class GameServer {
     private List<Bullet> bullets = new CopyOnWriteArrayList<>();
 
     private Timer enemyAnimationTimer; // 슬라임 애니메이션 속도 조절용
-    private Timer damageTimer;         // 데미지 적용 타이머 추가
+    private Timer damageTimer; // 데미지 적용 타이머 추가
 
     public void start() throws IOException {
         ServerSocket serverSocket = new ServerSocket(PORT);
@@ -135,7 +136,8 @@ public class GameServer {
 
         Object action = input.get("action");
         if ("attack".equals(action)) {
-            int bulletX = player.facingRight ? player.x + CHARACTER_WIDTH - BULLET_SIZE / 2 : player.x - BULLET_SIZE / 2;
+            int bulletX = player.facingRight ? player.x + CHARACTER_WIDTH - BULLET_SIZE / 2
+                    : player.x - BULLET_SIZE / 2;
             int bulletY = player.y + CHARACTER_HEIGHT / 2 - BULLET_SIZE / 2 - 13;
             int dx = player.facingRight ? BULLET_SPEED : -BULLET_SPEED;
             bullets.add(new Bullet(bulletX, bulletY, dx));
@@ -152,16 +154,22 @@ public class GameServer {
         int dx = 0, dy = 0;
         for (String key : player.keys) {
             switch (key) {
-                case "LEFT" -> {
+                case "LEFT": {
                     dx -= PLAYER_MOVE_SPEED;
                     player.facingRight = false;
+                    break;
                 }
-                case "RIGHT" -> {
+                case "RIGHT": {
                     dx += PLAYER_MOVE_SPEED;
                     player.facingRight = true;
+                    break;
                 }
-                case "UP" -> dy -= PLAYER_MOVE_SPEED;
-                case "DOWN" -> dy += PLAYER_MOVE_SPEED;
+                case "UP":
+                    dy -= PLAYER_MOVE_SPEED;
+                    break;
+                case "DOWN":
+                    dy += PLAYER_MOVE_SPEED;
+                    break;
             }
         }
         if (dx != 0 && dy != 0) {
@@ -222,21 +230,25 @@ public class GameServer {
             int side = rand.nextInt(4);
             int spawnX = 0, spawnY = 0;
             switch (side) {
-                case 0 -> {
+                case 0: {
                     spawnX = -ENEMY_SIZE;
                     spawnY = rand.nextInt(HEIGHT);
+                    break;
                 }
-                case 1 -> {
+                case 1: {
                     spawnX = WIDTH;
                     spawnY = rand.nextInt(HEIGHT);
+                    break;
                 }
-                case 2 -> {
+                case 2: {
                     spawnX = rand.nextInt(WIDTH);
                     spawnY = -ENEMY_SIZE;
+                    break;
                 }
-                case 3 -> {
+                case 3: {
                     spawnX = rand.nextInt(WIDTH);
                     spawnY = HEIGHT;
+                    break;
                 }
             }
             enemies.add(new Enemy(spawnX, spawnY));
