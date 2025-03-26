@@ -21,6 +21,7 @@ public class GameServer {
     private static final int BULLET_SIZE = 140;
 
     private static class Player {
+        int mp = 100; // MP 추가
         int x = 100;
         int y = 300;
         int health = 100;
@@ -135,7 +136,10 @@ public class GameServer {
         }
 
         Object action = input.get("action");
-        if ("attack".equals(action)) {
+        if ("skill".equals(action)) {
+            if (player.mp >= 10)
+                player.mp -= 10;
+        } else if ("attack".equals(action)) {
             int bulletX = player.facingRight ? player.x + CHARACTER_WIDTH - BULLET_SIZE / 2
                     : player.x - BULLET_SIZE / 2;
             int bulletY = player.y + CHARACTER_HEIGHT / 2 - BULLET_SIZE / 2 - 13;

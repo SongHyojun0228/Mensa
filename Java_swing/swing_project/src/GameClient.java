@@ -44,6 +44,7 @@ class GamePanel extends JPanel implements KeyListener {
     private int characterY = 300;
     private boolean facingRight = true;
     private int playerHealth = 100;
+    private int playerMP = 100; // MP 추가
 
     private final int CHARACTER_WIDTH = 50;
     private final int CHARACTER_HEIGHT = 50;
@@ -125,7 +126,6 @@ class GamePanel extends JPanel implements KeyListener {
             currentFrameImage = getCharacterFrame(currentFrame); // 뛰는 이미지
             repaint();
         });
-        
         animationTimer.start();
 
         syncTimer = new Timer(50, e -> sendInput());
@@ -177,6 +177,7 @@ class GamePanel extends JPanel implements KeyListener {
         g.drawImage(displayed, characterX, characterY, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
 
         drawHealthBar(g);
+        drawMPBar(g);
 
         for (Map<String, Object> e : enemies) {
             int ex = (int) e.get("x");
@@ -194,6 +195,18 @@ class GamePanel extends JPanel implements KeyListener {
         for (SkillEffect effect : skillEffects) {
             effect.draw(g);
         }
+    }
+
+    private void drawMPBar(Graphics g) {
+        int barWidth = CHARACTER_WIDTH;
+        int barHeight = 4; // 두께 2/5
+        int x = characterX;
+        int y = characterY - 5 - 10 + 10; // HP바 기준으로 정확히 아래에
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y, barWidth, barHeight);
+        int mpWidth = (int) (barWidth * (playerMP / 100.0));
+        g.setColor(Color.BLUE);
+        g.fillRect(x + 1, y + 1, mpWidth - 1, barHeight - 1);
     }
 
     private void drawHealthBar(Graphics g) {
@@ -250,10 +263,13 @@ class GamePanel extends JPanel implements KeyListener {
                 sendAction("attack");
                 break;
             case KeyEvent.VK_X: {
-                sendAction("skill");
-                int skillX = facingRight ? characterX + CHARACTER_WIDTH + 20 : characterX - BULLET_SIZE - 20;
-                int skillY = characterY + CHARACTER_HEIGHT / 2 - BULLET_SIZE / 2 - 20;
-                skillEffects.add(new SkillEffect(skillX, skillY, facingRight));
+                if (playerMP >= 10) {
+                    playerMP -= 10;
+                    sendAction("skill");
+                    int skillX = facingRight ? characterX + CHARACTER_WIDTH + 20 : characterX - BULLET_SIZE - 20;
+                    int skillY = characterY + CHARACTER_HEIGHT / 2 - BULLET_SIZE / 2 - 20;
+                    skillEffects.add(new SkillEffect(skillX, skillY, facingRight));
+                }
                 break;
             }
         }
@@ -310,4 +326,5 @@ class GamePanel extends JPanel implements KeyListener {
             }
         }
     }
+
 }
