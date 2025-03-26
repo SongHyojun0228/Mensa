@@ -12,12 +12,11 @@
 // import javax.swing.*;
 // import javax.swing.Timer;
 
-// // 192.168.107.6
-// public class GameClient extends JFrame {
+// public class GameClient2 extends JFrame {
 
 //     private GamePanel gamePanel;
 
-//     public GameClient() {
+//     public GameClient2() {
 //         setTitle("GameClient");
 //         setSize(1280, 720);
 //         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,7 +30,7 @@
 //     }
 
 //     public static void main(String[] args) {
-//         new GameClient();
+//         new GameClient2();
 //     }
 // }
 
@@ -48,7 +47,7 @@
 //     private int characterY = 300;
 //     private boolean facingRight = true;
 //     private int playerHealth = 100;
-//     private int playerMP = 100; // MP 추가
+//     private int playerMP = 100;
 
 //     private final int CHARACTER_WIDTH = 50;
 //     private final int CHARACTER_HEIGHT = 50;
@@ -57,6 +56,7 @@
 
 //     private List<Map<String, Object>> enemies = new ArrayList<>();
 //     private List<Map<String, Object>> bullets = new ArrayList<>();
+//     private List<Map<String, Object>> otherPlayers = new ArrayList<>();
 //     private List<SkillEffect> skillEffects = new ArrayList<>();
 
 //     private Set<String> pressedKeys = new HashSet<>();
@@ -93,8 +93,6 @@
 //     }
 
 //     private void connectToServer() {
-//         // 소켓을 생성하여 연결 요청
-//         String serverIp = "192.168.107.6";
 //         try {
 //             socket = new Socket("localhost", 2003);
 //             out = new ObjectOutputStream(socket.getOutputStream());
@@ -124,12 +122,12 @@
 //     private void startTimers() {
 //         animationTimer = new Timer(200, e -> {
 //             if (pressedKeys.isEmpty()) {
-//                 currentFrameImage = idleImage; // 키 안 누를 땐 idle 이미지
+//                 currentFrameImage = idleImage;
 //                 repaint();
 //                 return;
 //             }
 //             currentFrame = (currentFrame + 1) % 6;
-//             currentFrameImage = getCharacterFrame(currentFrame); // 뛰는 이미지
+//             currentFrameImage = getCharacterFrame(currentFrame);
 //             repaint();
 //         });
 //         animationTimer.start();
@@ -163,15 +161,31 @@
 //     }
 
 //     private void updateGameState(Map<String, Object> state) {
-//         characterX = (int) state.get("playerX");
-//         characterY = (int) state.get("playerY");
-//         playerHealth = (int) state.get("health");
-//         facingRight = (boolean) state.get("facingRight");
-
+//         otherPlayers = (List<Map<String, Object>>) state.get("players");
+//         if (!otherPlayers.isEmpty()) {
+//             Map<String, Object> self = otherPlayers.get(0);
+//             characterX = (int) self.get("x");
+//             characterY = (int) self.get("y");
+//             playerHealth = (int) self.get("health");
+//             facingRight = (boolean) self.get("facingRight");
+//             playerMP = (int) self.get("mp");
+//         }
 //         enemies = (List<Map<String, Object>>) state.get("enemies");
 //         bullets = (List<Map<String, Object>>) state.get("bullets");
-
 //         repaint();
+//     }
+
+//     private void drawMPBar(Graphics g, int x, int y, int mp) {
+//         int barWidth = CHARACTER_WIDTH;
+//         int barHeight = 4;
+//         int barX = characterX;
+//         int barY = characterY - 5 - 10 + 10;
+
+//         g.setColor(Color.BLACK);
+//         g.drawRect(x, barY, barWidth, barHeight);
+//         int mpWidth = (int) (barWidth * (mp / 100.0));
+//         g.setColor(Color.BLUE);
+//         g.fillRect(x + 1, barY + 1, mpWidth - 1, barHeight - 1);
 //     }
 
 //     @Override
@@ -179,11 +193,21 @@
 //         super.paintComponent(g);
 //         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 
-//         Image displayed = facingRight ? currentFrameImage : flipImage((BufferedImage) currentFrameImage);
-//         g.drawImage(displayed, characterX, characterY, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+//         for (int i = 0; i < otherPlayers.size(); i++) {
+//             Map<String, Object> p = otherPlayers.get(i);
+//             int px = (int) p.get("x");
+//             int py = (int) p.get("y");
+//             boolean dir = (boolean) p.get("facingRight");
+//             int hp = (int) p.get("health");
 
-//         drawHealthBar(g);
-//         drawMPBar(g);
+//             Image frame = dir ? currentFrameImage : flipImage((BufferedImage) currentFrameImage);
+//             g.drawImage(frame, px, py, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+//             drawHealthBar(g, px, py, hp);
+
+//             if (i == 0) {
+//                 drawMPBar(g, px, py, playerMP);
+//             }
+//         }
 
 //         for (Map<String, Object> e : enemies) {
 //             int ex = (int) e.get("x");
@@ -203,44 +227,29 @@
 //         }
 //     }
 
-//     private void drawMPBar(Graphics g) {
-//         int barWidth = CHARACTER_WIDTH;
-//         int barHeight = 4; // 두께 2/5
-//         int x = characterX;
-//         int y = characterY - 5 - 10 + 10; // HP바 기준으로 정확히 아래에
-//         g.setColor(Color.BLACK);
-//         g.drawRect(x, y, barWidth, barHeight);
-//         int mpWidth = (int) (barWidth * (playerMP / 100.0));
-//         g.setColor(Color.BLUE);
-//         g.fillRect(x + 1, y + 1, mpWidth - 1, barHeight - 1);
-//     }
-
-//     private void drawHealthBar(Graphics g) {
+//     private void drawHealthBar(Graphics g, int x, int y, int health) {
 //         int barWidth = CHARACTER_WIDTH;
 //         int barHeight = 10;
-//         int x = characterX;
-//         int y = characterY - barHeight - 5;
+//         int barY = y - barHeight - 5;
 //         g.setColor(Color.BLACK);
-//         g.drawRect(x, y, barWidth, barHeight);
-//         int healthWidth = (int) (barWidth * (playerHealth / 100.0));
+//         g.drawRect(x, barY, barWidth, barHeight);
+//         int healthWidth = (int) (barWidth * (health / 100.0));
 //         g.setColor(Color.RED);
-//         g.fillRect(x + 1, y + 1, healthWidth - 1, barHeight - 1);
+//         g.fillRect(x + 1, barY + 1, healthWidth - 1, barHeight - 1);
 //     }
 
 //     private Image getCharacterFrame(int frame) {
 //         int fw = 32;
 //         int fh = 32;
 //         int fx = frame * fw;
-//         int fy = 0;
-//         return runImage.getSubimage(fx, fy, fw, fh);
+//         return runImage.getSubimage(fx, 0, fw, fh);
 //     }
 
 //     private Image getEnemyFrame(int frame) {
 //         int fw = 64;
 //         int fh = 64;
 //         int fx = frame * fw;
-//         int fy = 0;
-//         return enemyImage.getSubimage(fx, fy, fw, fh);
+//         return enemyImage.getSubimage(fx, 0, fw, fh);
 //     }
 
 //     private BufferedImage flipImage(BufferedImage image) {
@@ -268,7 +277,7 @@
 //             case KeyEvent.VK_Z:
 //                 sendAction("attack");
 //                 break;
-//             case KeyEvent.VK_X: {
+//             case KeyEvent.VK_X:
 //                 if (playerMP >= 10) {
 //                     playerMP -= 10;
 //                     sendAction("skill");
@@ -277,7 +286,6 @@
 //                     skillEffects.add(new SkillEffect(skillX, skillY, facingRight));
 //                 }
 //                 break;
-//             }
 //         }
 //     }
 
@@ -333,5 +341,4 @@
 //             }
 //         }
 //     }
-
-// } // 주석 테스트
+// }
