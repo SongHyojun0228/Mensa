@@ -21,7 +21,7 @@ public class GameServer {
     // 플레이어 : 각 클라이언트가 제어하는 캐릭터
     public static class Player implements Serializable {
 
-        public String id;               // 플레이어 이름
+        public String id;              // 플레이어 이름
         public int x = 100, y = 300;   // 초기 좌표
         public int health = 100;       // 체력
         public int mp = 100;           // 마나
@@ -113,7 +113,7 @@ public class GameServer {
         System.out.println("게임 서버 시작 (포트 " + PORT + ")");
 
         // 초기 슬라임 5마리 생성
-        spawnEnemies(5);
+        spawnEnemies(10);
 
         // 게임 루프 스레드 실행
         // 별도 스레드에서 게임 루프 실행 (약 60FPS)
