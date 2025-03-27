@@ -50,8 +50,8 @@ public class GameClient extends JFrame {
         try {
             // 서버 IP/포트는 상황에 맞게 수정
             // 서버 IP 주소 입력 필요 (자기 자신이면 127.0.0.1)
-            // IP : 192.168.107.6로 수정 (학원 IP)
-            socket = new Socket("127.0.0.1", 7777);
+            // IP : 192.168.107.10로 수정 (학원 IP)
+            socket = new Socket("192.168.107.10", 7777);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
