@@ -24,7 +24,7 @@ public class GameClient extends JFrame {
     private String playerName;
 
     public GameClient(String playerName) {
-        this.playerName = playerName;    // 사용자 이름 설정
+        this.playerName = playerName; // 사용자 이름 설정
         setTitle("Game Client - " + playerName);
         setSize(1280, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,7 +36,7 @@ public class GameClient extends JFrame {
         setFocusable(true);
         setVisible(true);
 
-        // 서버 연결 
+        // 서버 연결
         connectToServer();
 
         // GamePanel에서 서버로 키 입력 등을 전송할 수 있도록 out 스트림 전달
@@ -50,8 +50,8 @@ public class GameClient extends JFrame {
         try {
             // 서버 IP/포트는 상황에 맞게 수정
             // 서버 IP 주소 입력 필요 (자기 자신이면 127.0.0.1)
-            // IP : 192.168.107.10 로 수정 (학원 IP)
-            socket = new Socket("192.168.107.10", 7777);
+            // IP : 192.168.107.6로 수정 (학원 IP)
+            socket = new Socket("127.0.0.1", 7777);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
@@ -135,7 +135,7 @@ class GamePanel extends JPanel implements KeyListener {
         this.out = out;
     }
 
-    private String playerId;  // 내 플레이어 ID 저장
+    private String playerId; // 내 플레이어 ID 저장
 
     public GamePanel(String playerId) {
         this.playerId = playerId;
@@ -248,7 +248,7 @@ class GamePanel extends JPanel implements KeyListener {
         if (!players.isEmpty()) {
             for (GameServer.Player p : players) {
                 boolean isLocal = p.equals(players.get(0));
-                boolean isMoving = !p.keys.isEmpty();  // 키 입력 여부로 움직임 판단
+                boolean isMoving = !p.keys.isEmpty(); // 키 입력 여부로 움직임 판단
 
                 // 본인 캐릭터인 경우에만 애니메이션 처리
                 Image baseImage;
@@ -387,7 +387,8 @@ class GamePanel extends JPanel implements KeyListener {
 
                     if (localPlayer != null && localPlayer.mp >= 10) {
                         localPlayer.mp -= 10;
-                        int skillX = localPlayer.facingRight ? localPlayer.x + CHARACTER_WIDTH + 20 : localPlayer.x - 140 - 20;
+                        int skillX = localPlayer.facingRight ? localPlayer.x + CHARACTER_WIDTH + 20
+                                : localPlayer.x - 140 - 20;
                         int skillY = localPlayer.y + CHARACTER_HEIGHT / 2 - 70;
                         skillEffects.add(new SkillEffect(skillX, skillY, localPlayer.facingRight));
                         sendAction("skill");
@@ -406,8 +407,8 @@ class GamePanel extends JPanel implements KeyListener {
         try {
             Map<String, Object> input = new HashMap<>();
             input.put("action", action);
-            out.writeUnshared(input);  // writeObject보다 가볍고 버벅임 감소
-            out.flush();               // flush는 유지
+            out.writeUnshared(input); // writeObject보다 가볍고 버벅임 감소
+            out.flush(); // flush는 유지
         } catch (IOException e) {
             e.printStackTrace();
         }
