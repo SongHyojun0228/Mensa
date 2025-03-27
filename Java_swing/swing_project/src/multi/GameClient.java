@@ -247,7 +247,7 @@ class GamePanel extends JPanel implements KeyListener {
 
         if (!players.isEmpty()) {
             for (GameServer.Player p : players) {
-                boolean isLocal = p.equals(players.get(0));
+                boolean isLocal = p.id.equals(playerId);
                 boolean isMoving = !p.keys.isEmpty(); // 키 입력 여부로 움직임 판단
 
                 // 본인 캐릭터인 경우에만 애니메이션 처리
