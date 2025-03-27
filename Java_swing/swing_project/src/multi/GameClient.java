@@ -51,7 +51,7 @@ public class GameClient extends JFrame {
             // 서버 IP/포트는 상황에 맞게 수정
             // 서버 IP 주소 입력 필요 (자기 자신이면 127.0.0.1)
             // IP : 192.168.107.10로 수정 (학원 IP)
-            socket = new Socket("192.168.107.10", 7777);
+            socket = new Socket("127.0.0.1", 7777);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
@@ -142,10 +142,10 @@ class GamePanel extends JPanel implements KeyListener {
 
         setDoubleBuffered(true);
         try {
-            backgroundImage = ImageIO.read(getClass().getResource("/images/5.png"));
-            runImage = ImageIO.read(getClass().getResource("/images/Pink_Monster_Run_6.png"));
-            idleImage = ImageIO.read(getClass().getResource("/images/Pink_Monster.png"));
-            enemyImage = ImageIO.read(getClass().getResource("/images/Slime1_Walk_full[1].png"));
+            backgroundImage = ImageIO.read(getClass().getResource("/images/background.png"));
+            runImage = ImageIO.read(getClass().getResource("/images/character_run.png"));
+            idleImage = ImageIO.read(getClass().getResource("/images/character_idle.png"));
+            enemyImage = ImageIO.read(getClass().getResource("/images/slime_moving.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
