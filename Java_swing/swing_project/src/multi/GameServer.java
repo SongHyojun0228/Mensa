@@ -8,8 +8,8 @@ import java.util.concurrent.*;
 
 public class GameServer {
 
-    // 서버소켓이 연결한 포트번호 
-    // 클라이언트 소켓은 이 포트번호로 요청 해야 함 
+    // 서버소켓이 연결한 포트번호
+    // 클라이언트 소켓은 이 포트번호로 요청 해야 함
     // socket = new Socket("127.0.0.1", 7777);
     private static final int PORT = 7777;
     private static final int WIDTH = 1280;
@@ -20,26 +20,27 @@ public class GameServer {
     // 플레이어 : 각 클라이언트가 제어하는 캐릭터
     public static class Player implements Serializable {
 
-        public String id;              // 플레이어 이름
-        public int x = 100, y = 300;   // 초기 좌표
-        public int health = 100;       // 체력
-        public int mp = 100;           // 마나
+        public String id; // 플레이어 이름
+        public int x = 100, y = 300; // 초기 좌표
+        public int health = 100; // 체력
+        public int mp = 100; // 마나
         public boolean facingRight = true; // 오른쪽 방향 바라보는지 여부
-        public long lastHitTime = 0;   // 마지막 피격 시간
+        public long lastHitTime = 0; // 마지막 피격 시간
         public Set<String> keys = new HashSet<>(); // 누르고 있는 키 목록
+        public boolean isDead = false; // 사망 여부 추가**
     }
 
     // 슬라임(Enemy) 몬스터 객체
     public static class Enemy implements Serializable {
 
-        public int x, y;               // 위치 좌표
-        public int frame = 0;          // 애니메이션 프레임 인덱스
+        public int x, y; // 위치 좌표
+        public int frame = 0; // 애니메이션 프레임 인덱스
         public boolean moving = false;
         public int health = 30; // 슬라임 체력 추가
-        public int attackPower = 10;   // 공격력
-        public String targetId = null;           // 추적할 플레이어 ID
-        public long lastTargetChangeTime = 0;    // 마지막 타겟 변경 시간
-        private long lastFrameUpdate = 0;        // 마지막 프레임 갱신 시간
+        public int attackPower = 10; // 공격력
+        public String targetId = null; // 추적할 플레이어 ID
+        public long lastTargetChangeTime = 0; // 마지막 타겟 변경 시간
+        private long lastFrameUpdate = 0; // 마지막 프레임 갱신 시간
 
         public Enemy(int x, int y) {
             this.x = x;
@@ -71,8 +72,8 @@ public class GameServer {
     // 총알(Bullet)
     public static class Bullet implements Serializable {
 
-        public int x, y, dx;               // 위치, 이동 방향
-        public long createdTime;           // 생성 시간
+        public int x, y, dx; // 위치, 이동 방향
+        public long createdTime; // 생성 시간
 
         public Bullet(int x, int y, int dx) {
             this.x = x;
@@ -112,7 +113,16 @@ public class GameServer {
     private List<SkillEvent> skillEvents = new CopyOnWriteArrayList<>();
     private ConcurrentHashMap<String, ObjectOutputStream> clientOutputs = new ConcurrentHashMap<>();
 
-    // 서버 시작 
+    // 게임을 초기 상태로 리셋하는 메서드 추가**
+    private void resetGame() {
+        players.clear();
+        enemies.clear();
+        bullets.clear();
+        skillEvents.clear();
+        System.out.println("게임이 초기화되었습니다.");
+    }
+
+    // 서버 시작
     public void start() throws IOException {
         ServerSocket serverSocket = new ServerSocket(PORT);
         System.out.println("게임 서버 시작 (포트 " + PORT + ")");
@@ -156,10 +166,20 @@ public class GameServer {
             int dx = 0, dy = 0;
             for (String key : p.keys) {
                 switch (key) {
-                    case "LEFT": dx -= 5; p.facingRight = false; break;
-                    case "RIGHT": dx += 5; p.facingRight = true; break;
-                    case "UP": dy -= 5; break;
-                    case "DOWN": dy += 5; break;
+                    case "LEFT":
+                        dx -= 5;
+                        p.facingRight = false;
+                        break;
+                    case "RIGHT":
+                        dx += 5;
+                        p.facingRight = true;
+                        break;
+                    case "UP":
+                        dy -= 5;
+                        break;
+                    case "DOWN":
+                        dy += 5;
+                        break;
                 }
             }
             if (dx != 0 && dy != 0) {
@@ -173,7 +193,8 @@ public class GameServer {
 
     // 슬라임 이동 처리
     private void updateEnemies() {
-        if (players.isEmpty()) return;
+        if (players.isEmpty())
+            return;
         List<Player> playerList = new ArrayList<>(players.values());
         long now = System.currentTimeMillis();
         Random rand = new Random();
@@ -183,7 +204,8 @@ public class GameServer {
                 e.targetId = newTarget.id;
                 e.lastTargetChangeTime = now;
             }
-            Player target = playerList.stream().filter(p -> p.id.equals(e.targetId)).findFirst().orElse(playerList.get(0));
+            Player target = playerList.stream().filter(p -> p.id.equals(e.targetId)).findFirst()
+                    .orElse(playerList.get(0));
             e.update(target);
         }
     }
@@ -200,6 +222,8 @@ public class GameServer {
     private void checkDamage() {
         long currentTime = System.currentTimeMillis();
         for (Player p : players.values()) {
+            if (p.isDead)
+                continue; // 이미 죽은 경우 무시**
             int centerX = p.x + 25;
             int centerY = p.y + 25;
             int hitLeft = centerX - 25;
@@ -219,6 +243,9 @@ public class GameServer {
             if (damage > 0 && currentTime - p.lastHitTime >= 500) {
                 p.health = Math.max(0, p.health - damage);
                 p.lastHitTime = currentTime;
+                if (p.health == 0) {
+                    p.isDead = true; // 체력이 0이면 사망 처리**
+                }
             }
         }
     }
@@ -249,10 +276,22 @@ public class GameServer {
             int side = rand.nextInt(4);
             int spawnX = 0, spawnY = 0;
             switch (side) {
-                case 0: spawnX = -100; spawnY = rand.nextInt(HEIGHT); break;
-                case 1: spawnX = WIDTH; spawnY = rand.nextInt(HEIGHT); break;
-                case 2: spawnX = rand.nextInt(WIDTH); spawnY = -100; break;
-                case 3: spawnX = rand.nextInt(WIDTH); spawnY = HEIGHT; break;
+                case 0:
+                    spawnX = -100;
+                    spawnY = rand.nextInt(HEIGHT);
+                    break;
+                case 1:
+                    spawnX = WIDTH;
+                    spawnY = rand.nextInt(HEIGHT);
+                    break;
+                case 2:
+                    spawnX = rand.nextInt(WIDTH);
+                    spawnY = -100;
+                    break;
+                case 3:
+                    spawnX = rand.nextInt(WIDTH);
+                    spawnY = HEIGHT;
+                    break;
             }
             enemies.add(new Enemy(spawnX, spawnY));
         }
@@ -260,7 +299,7 @@ public class GameServer {
 
     // 클라이언트 연결 요청 처리 스레드
     class ClientHandler extends Thread {
-        Socket socket;      // 연결됐을 때 서버 측에서 생성할 소켓
+        Socket socket; // 연결됐을 때 서버 측에서 생성할 소켓
         ObjectInputStream in;
         ObjectOutputStream out;
         String playerId;
@@ -299,7 +338,8 @@ public class GameServer {
                 }
                 try {
                     socket.close();
-                } catch (IOException e) { }
+                } catch (IOException e) {
+                }
             }
         }
     }
@@ -348,8 +388,6 @@ public class GameServer {
     public static void main(String[] args) throws IOException {
         new GameServer().start();
     }
-
-
 
     // ✅ 총알과 슬라임 충돌 처리 (총알 데미지: 5)
     private void checkBulletEnemyCollision() {

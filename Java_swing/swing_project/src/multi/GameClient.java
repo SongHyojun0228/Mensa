@@ -88,6 +88,15 @@ class GamePanel extends JPanel implements KeyListener {
     private String playerId;
     private static final int CHARACTER_WIDTH = 50, CHARACTER_HEIGHT = 50;
 
+    // 죽는 이펙트 관련**
+    private boolean isDead = false;
+    private BufferedImage deathImage;
+    private List<BufferedImage> deathFrames = new ArrayList<>();
+    private int deathFrameIndex = 0;
+    private Timer deathAnimationTimer;
+    private JButton restartButton;
+    private int deathX, deathY;
+
     public void setOutputStream(ObjectOutputStream out) {
         this.out = out;
     }
@@ -111,6 +120,10 @@ class GamePanel extends JPanel implements KeyListener {
             runImage = ImageIO.read(getClass().getResource("/images/character_run.png"));
             idleImage = ImageIO.read(getClass().getResource("/images/character_idle.png"));
             enemyImage = ImageIO.read(getClass().getResource("/images/slime_moving.png"));
+            deathImage = ImageIO.read(getClass().getResource("/images/Pink_Monster_Death_8.png"));// 이미지 추가**
+            for (int i = 0; i < 8; i++) {
+                deathFrames.add(deathImage.getSubimage(i * 32, 0, 32, 32));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -120,6 +133,19 @@ class GamePanel extends JPanel implements KeyListener {
         players = (List<GameServer.Player>) state.get("players");
         enemies = (List<GameServer.Enemy>) state.get("enemies");
         bullets = (List<GameServer.Bullet>) state.get("bullets");
+
+        for (GameServer.Player p : players) {// *죽는 이펙스 실행 */
+            if (p.id.equals(playerId)) {
+                if (!isDead && p.isDead) {
+                    deathX = p.x;
+                    deathY = p.y;
+                    startDeathAnimation();
+                }
+                isDead = p.isDead;
+            }
+        }
+        repaint();
+
         if (state.containsKey("skillEvents")) {
             List<GameServer.SkillEvent> events = (List<GameServer.SkillEvent>) state.get("skillEvents");
             for (GameServer.SkillEvent event : events) {
@@ -131,8 +157,23 @@ class GamePanel extends JPanel implements KeyListener {
         repaint();
     }
 
+    // 사망 애니메이션 함수**
+    private void startDeathAnimation() {
+        deathFrameIndex = 0;
+        deathAnimationTimer = new Timer(200, e -> {
+            if (deathFrameIndex < deathFrames.size() - 1) {
+                deathFrameIndex++;
+            } else {
+                deathAnimationTimer.stop();
+            }
+            repaint();
+        });
+        deathAnimationTimer.start();
+    }
+
     private void sendInput() {
-        if (out == null) return;
+        if (out == null)
+            return;
         try {
             Map<String, Object> input = new HashMap<>();
             input.put("keys", new ArrayList<>(pressedKeys));
@@ -145,9 +186,9 @@ class GamePanel extends JPanel implements KeyListener {
     }
 
     // private void updateWalkAnimation() {
-    //     currentFrame = (currentFrame + 1) % 6;
-    //     currentFrameImage = getCharacterFrame(currentFrame);
-    //     repaint();
+    // currentFrame = (currentFrame + 1) % 6;
+    // currentFrameImage = getCharacterFrame(currentFrame);
+    // repaint();
     // }
     private Image getCharacterFrame(int frame) {
         int frameWidth = 32, frameHeight = 32;
@@ -194,6 +235,24 @@ class GamePanel extends JPanel implements KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+
+        if (isDead) {
+            g.drawImage(deathFrames.get(deathFrameIndex), deathX, deathY, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 50));
+            g.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
+
+            if (restartButton == null) {
+                restartButton = new JButton("Try again?");
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20));
+                restartButton.setBounds(getWidth() / 2 - 75, getHeight() / 2 + 50, 150, 50);
+                restartButton.addActionListener(e -> restartGame());
+                setLayout(null);
+                add(restartButton);
+            }
+            return;
+        }
+
         for (GameServer.Player p : players) {
             boolean isMoving = !p.keys.isEmpty();
             Image baseImage = isMoving ? getCharacterFrame(currentFrame) : idleImage;
@@ -218,6 +277,27 @@ class GamePanel extends JPanel implements KeyListener {
         for (SkillEffect effect : skillEffects) {
             effect.draw(g);
         }
+    }
+
+    // 다시 시작 버튼을 눌렀을 때 서버에 재시작 요청을 보내도록 수정
+    private void restartGame() {
+        isDead = false;
+        deathFrameIndex = 0;
+        remove(restartButton);
+        restartButton = null;
+
+        if (out != null) {
+            try {
+                Map<String, Object> input = new HashMap<>();
+                input.put("restart", true);
+                out.reset();
+                out.writeObject(input);
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        repaint();
     }
 
     private void drawBar(Graphics g, int x, int y, int width, int height, int value, Color color) {
@@ -297,10 +377,18 @@ class GamePanel extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT: pressedKeys.remove("LEFT"); break;
-            case KeyEvent.VK_RIGHT: pressedKeys.remove("RIGHT"); break;
-            case KeyEvent.VK_UP: pressedKeys.remove("UP"); break;
-            case KeyEvent.VK_DOWN: pressedKeys.remove("DOWN"); break;
+            case KeyEvent.VK_LEFT:
+                pressedKeys.remove("LEFT");
+                break;
+            case KeyEvent.VK_RIGHT:
+                pressedKeys.remove("RIGHT");
+                break;
+            case KeyEvent.VK_UP:
+                pressedKeys.remove("UP");
+                break;
+            case KeyEvent.VK_DOWN:
+                pressedKeys.remove("DOWN");
+                break;
         }
     }
 
