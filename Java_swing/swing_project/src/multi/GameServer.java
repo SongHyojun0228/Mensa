@@ -35,6 +35,7 @@ public class GameServer {
         public int x, y;               // 위치 좌표
         public int frame = 0;          // 애니메이션 프레임 인덱스
         public boolean moving = false;
+        public int health = 30; // 슬라임 체력 추가
         public int attackPower = 10;   // 공격력
         public String targetId = null;           // 추적할 플레이어 ID
         public long lastTargetChangeTime = 0;    // 마지막 타겟 변경 시간
@@ -132,6 +133,7 @@ public class GameServer {
             updateEnemies();
             updateBullets();
             checkDamage();
+            checkBulletEnemyCollision();
             long now = System.currentTimeMillis();
             if (now - lastSpawnTime >= 10000) {
                 spawnEnemies(10);
@@ -314,11 +316,24 @@ public class GameServer {
         if (input.containsKey("action")) {
             String action = (String) input.get("action");
             if ("attack".equals(action)) {
+                // 기존 총알 공격 처리 그대로 유지
                 int bulletX = p.facingRight ? p.x + 50 - 70 : p.x - 70;
                 int bulletY = p.y + 25 - 70;
                 int dx = p.facingRight ? 10 : -10;
                 bullets.add(new Bullet(bulletX, bulletY, dx));
             } else if ("skill".equals(action)) {
+                // ✅ 스킬 데미지 처리
+                int skillCenterX = p.facingRight ? p.x + 70 + 70 : p.x - 160 + 70;
+                int skillCenterY = p.y - 45 + 70;
+                for (Enemy e : enemies) {
+                    int ex = e.x + 50;
+                    int ey = e.y + 50;
+                    int distance = (int) Math.sqrt(Math.pow(skillCenterX - ex, 2) + Math.pow(skillCenterY - ey, 2));
+                    if (distance < 70) {
+                        e.health -= 30;
+                    }
+                }
+                enemies.removeIf(e -> e.health <= 0);
                 if (p.mp >= 10) {
                     p.mp -= 10;
                     int skillX = p.facingRight ? p.x + 70 : p.x - 160;
@@ -332,5 +347,25 @@ public class GameServer {
 
     public static void main(String[] args) throws IOException {
         new GameServer().start();
+    }
+
+
+
+    // ✅ 총알과 슬라임 충돌 처리 (총알 데미지: 5)
+    private void checkBulletEnemyCollision() {
+        for (Bullet b : bullets) {
+            for (Enemy e : enemies) {
+                int bx = b.x + 70;
+                int by = b.y + 70;
+                int ex = e.x + 50;
+                int ey = e.y + 50;
+                int distance = (int) Math.sqrt(Math.pow(bx - ex, 2) + Math.pow(by - ey, 2));
+                if (distance < 50) {
+                    e.health -= 5;
+                    b.createdTime = 0;
+                }
+            }
+        }
+        enemies.removeIf(e -> e.health <= 0);
     }
 }
