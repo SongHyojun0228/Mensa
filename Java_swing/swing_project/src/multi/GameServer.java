@@ -188,6 +188,8 @@ public class GameServer {
             }
             p.x += dx;
             p.y += dy;
+            p.x = Math.max(0, Math.min(p.x, WIDTH - 50));  // 50은 캐릭터 가로 크기
+            p.y = Math.max(0, Math.min(p.y, HEIGHT - 50)); // 50은 캐릭터 세로 크기
         }
     }
 
