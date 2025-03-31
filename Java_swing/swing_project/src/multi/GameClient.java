@@ -29,6 +29,8 @@ public class GameClient extends JFrame {
         gamePanel = new GamePanel(playerName);
         add(gamePanel);
         addKeyListener(gamePanel);
+        // 30프레임으로 다시 그리기
+        new javax.swing.Timer(33, e -> gamePanel.repaint()).start();
         setFocusable(true);
         setVisible(true);
 
