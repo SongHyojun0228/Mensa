@@ -119,7 +119,6 @@ class GamePanel extends JPanel implements KeyListener {
 
         // 피격 타이머 (100간격 6번 깜빡이면 종료)**
         hitEffectTimer = new Timer(100, e -> {
-            System.out.println("hitEffectCounter: " + hitEffectCounter);
             hitEffectCounter++;
             if (hitEffectCounter >= 6) {
                 isHit = false;
@@ -153,7 +152,6 @@ class GamePanel extends JPanel implements KeyListener {
         bullets = (List<GameServer.Bullet>) state.get("bullets");
 
         for (GameServer.Player p : players) {// *죽는 이펙스 실행 */
-            System.out.println("플레이어 상태 업데이트: ID = " + p.id + ", isHit = " + p.isHit);
             if (p.id.equals(playerId)) {
                 if (!isDead && p.isDead) {
                     deathX = p.x;
@@ -291,7 +289,7 @@ class GamePanel extends JPanel implements KeyListener {
             drawBar(g, p.x, p.y - 15, CHARACTER_WIDTH, 10, p.health, Color.RED);
             drawBar(g, p.x, p.y - 5, CHARACTER_WIDTH, 4, p.mp, Color.BLUE);
 
-            // 🔥 깜빡이는 로직 적용
+            // 플레이어 그리는 로직 수정, 위에 기본값으로 그려주던걸 삭제하고 hitEffectCouter가 짝수이면 안보이게함
             if (!(p.isHit && (hitEffectCounter % 2 == 0))) {
                 g.drawImage(playerImage, p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
             }
