@@ -259,7 +259,7 @@ class GamePanel extends JPanel implements KeyListener {
             Image playerImage = p.facingRight ? baseImage : flipImage((BufferedImage) baseImage);
             g.drawImage(playerImage, p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
             g.setColor(Color.WHITE);
-            g.drawString(p.id, p.x, p.y - 10);
+            g.drawString(p.id, p.x, p.y + CHARACTER_HEIGHT + 10);
             drawBar(g, p.x, p.y - 15, CHARACTER_WIDTH, 10, p.health, Color.RED);
             drawBar(g, p.x, p.y - 5, CHARACTER_WIDTH, 4, p.mp, Color.BLUE);
         }
@@ -304,7 +304,7 @@ class GamePanel extends JPanel implements KeyListener {
         g.setColor(Color.BLACK);
         g.drawRect(x, y, width, height);
         g.setColor(color);
-        g.fillRect(x + 1, y + 1, (int) ((width - 2) * (value / 100.0)), height - 2);
+        g.fillRect(x + 1, y + 1, (int) ((width - 2) * (value / 100.0)), height - 1);
     }
 
     private Image getEnemyFrame(int frame) {

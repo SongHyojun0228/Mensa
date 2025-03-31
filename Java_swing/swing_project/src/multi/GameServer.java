@@ -391,6 +391,7 @@ public class GameServer {
 
     // ✅ 총알과 슬라임 충돌 처리 (총알 데미지: 5)
     private void checkBulletEnemyCollision() {
+        List<Enemy> deadEnemies = new ArrayList<>();
         for (Bullet b : bullets) {
             for (Enemy e : enemies) {
                 int bx = b.x + 70;
@@ -401,9 +402,27 @@ public class GameServer {
                 if (distance < 50) {
                     e.health -= 5;
                     b.createdTime = 0;
+                    if (e.health <= 0 && !deadEnemies.contains(e)) {
+                        deadEnemies.add(e);
+
+                        // ✅ 슬라임이 죽은 시점에 가장 가까운 플레이어에게 mp 회복
+                        Player nearest = null;
+                        double minDist = Double.MAX_VALUE;
+                        for (Player p : players.values()) {
+                            double d = Math.hypot(p.x - e.x, p.y - e.y);
+                            if (d < minDist) {
+                                minDist = d;
+                                nearest = p;
+                            }
+                        }
+                        if (nearest != null) {
+                            nearest.mp = Math.min(100, nearest.mp + 1); // 🔹 최대 100 제한
+                        }
+                    }
                 }
             }
         }
-        enemies.removeIf(e -> e.health <= 0);
+        enemies.removeAll(deadEnemies);
     }
+
 }
