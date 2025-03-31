@@ -28,6 +28,7 @@ public class GameServer {
         public long lastHitTime = 0; // 마지막 피격 시간
         public Set<String> keys = new HashSet<>(); // 누르고 있는 키 목록
         public boolean isDead = false; // 사망 여부 추가**
+        public boolean isHit = false; // 추가**
     }
 
     // 슬라임(Enemy) 몬스터 객체
@@ -188,7 +189,7 @@ public class GameServer {
             }
             p.x += dx;
             p.y += dy;
-            p.x = Math.max(0, Math.min(p.x, WIDTH - 50));  // 50은 캐릭터 가로 크기
+            p.x = Math.max(0, Math.min(p.x, WIDTH - 50)); // 50은 캐릭터 가로 크기
             p.y = Math.max(130, Math.min(p.y, HEIGHT - 50)); // 50은 캐릭터 세로 크기
         }
     }
@@ -245,9 +246,15 @@ public class GameServer {
             if (damage > 0 && currentTime - p.lastHitTime >= 500) {
                 p.health = Math.max(0, p.health - damage);
                 p.lastHitTime = currentTime;
+                p.isHit = true; // 피격 효과 활성화**
                 if (p.health == 0) {
                     p.isDead = true; // 체력이 0이면 사망 처리**
                 }
+            }
+
+            // 일정 시간동안은 isHit을 유지하도록 변경
+            if (currentTime - p.lastHitTime >= 600) {
+                p.isHit = false;
             }
         }
     }
@@ -278,23 +285,23 @@ public class GameServer {
             int side = rand.nextInt(4);
             int spawnX = 0, spawnY = 0;
             switch (side) {
-            case 0:
-                spawnX = -100;
-                spawnY = 130 + rand.nextInt(HEIGHT - 130);
-                break;
-            case 1:
-                spawnX = WIDTH;
-                spawnY = 130 + rand.nextInt(HEIGHT - 130);
-                break;
-            case 2:
-                spawnX = rand.nextInt(WIDTH);
-                spawnY = HEIGHT;
-                break;
-            case 3:
-                spawnX = rand.nextInt(WIDTH);
-                spawnY = HEIGHT;
-                break;
-        }
+                case 0:
+                    spawnX = -100;
+                    spawnY = 130 + rand.nextInt(HEIGHT - 130);
+                    break;
+                case 1:
+                    spawnX = WIDTH;
+                    spawnY = 130 + rand.nextInt(HEIGHT - 130);
+                    break;
+                case 2:
+                    spawnX = rand.nextInt(WIDTH);
+                    spawnY = HEIGHT;
+                    break;
+                case 3:
+                    spawnX = rand.nextInt(WIDTH);
+                    spawnY = HEIGHT;
+                    break;
+            }
             enemies.add(new Enemy(spawnX, spawnY));
         }
     }

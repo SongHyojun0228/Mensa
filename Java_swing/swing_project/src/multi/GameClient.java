@@ -99,6 +99,11 @@ class GamePanel extends JPanel implements KeyListener {
     private JButton restartButton;
     private int deathX, deathY;
 
+    // 피격 이펙트 관련
+    private boolean isHit = false;
+    private Timer hitEffectTimer;
+    private int hitEffectCounter = 0;
+
     public void setOutputStream(ObjectOutputStream out) {
         this.out = out;
     }
@@ -109,6 +114,17 @@ class GamePanel extends JPanel implements KeyListener {
         loadImages();
         animationTimer = new Timer(200, e -> {
             currentFrame = (currentFrame + 1) % 6;
+            repaint();
+        });
+
+        // 피격 타이머 (100간격 6번 깜빡이면 종료)**
+        hitEffectTimer = new Timer(100, e -> {
+            System.out.println("hitEffectCounter: " + hitEffectCounter);
+            hitEffectCounter++;
+            if (hitEffectCounter >= 6) {
+                isHit = false;
+                hitEffectTimer.stop();
+            }
             repaint();
         });
         animationTimer.start();
@@ -137,11 +153,20 @@ class GamePanel extends JPanel implements KeyListener {
         bullets = (List<GameServer.Bullet>) state.get("bullets");
 
         for (GameServer.Player p : players) {// *죽는 이펙스 실행 */
+            System.out.println("플레이어 상태 업데이트: ID = " + p.id + ", isHit = " + p.isHit);
             if (p.id.equals(playerId)) {
                 if (!isDead && p.isDead) {
                     deathX = p.x;
                     deathY = p.y;
                     startDeathAnimation();
+                }
+                // 피격 시 isHit을 타이머가 끝날 때까지 유지
+                if (p.isHit) {
+                    if (!isHit) {
+                        isHit = true;
+                        hitEffectCounter = 0;
+                        hitEffectTimer.start();
+                    }
                 }
                 isDead = p.isDead;
             }
@@ -236,6 +261,7 @@ class GamePanel extends JPanel implements KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g; // 이펙트 툴**
         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 
         if (isDead) {
@@ -259,11 +285,16 @@ class GamePanel extends JPanel implements KeyListener {
             boolean isMoving = !p.keys.isEmpty();
             Image baseImage = isMoving ? getCharacterFrame(currentFrame) : idleImage;
             Image playerImage = p.facingRight ? baseImage : flipImage((BufferedImage) baseImage);
-            g.drawImage(playerImage, p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+
             g.setColor(Color.WHITE);
             g.drawString(p.id, p.x, p.y + CHARACTER_HEIGHT + 10);
             drawBar(g, p.x, p.y - 15, CHARACTER_WIDTH, 10, p.health, Color.RED);
             drawBar(g, p.x, p.y - 5, CHARACTER_WIDTH, 4, p.mp, Color.BLUE);
+
+            // 🔥 깜빡이는 로직 적용
+            if (!(p.isHit && (hitEffectCounter % 2 == 0))) {
+                g.drawImage(playerImage, p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+            }
         }
         for (GameServer.Enemy enemy : enemies) {
             g.drawImage(getEnemyFrame(enemy.frame), enemy.x, enemy.y, 100, 100, this);
