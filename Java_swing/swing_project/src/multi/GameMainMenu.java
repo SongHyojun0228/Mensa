@@ -12,7 +12,7 @@ public class GameMainMenu extends JFrame {
     private JLabel backgroundLabel;
 
     public GameMainMenu() {
-        setTitle("스윙 게임 메인화면");
+        setTitle("망한게임");
         setSize(1280, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
