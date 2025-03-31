@@ -189,7 +189,7 @@ public class GameServer {
             p.x += dx;
             p.y += dy;
             p.x = Math.max(0, Math.min(p.x, WIDTH - 50));  // 50은 캐릭터 가로 크기
-            p.y = Math.max(0, Math.min(p.y, HEIGHT - 50)); // 50은 캐릭터 세로 크기
+            p.y = Math.max(130, Math.min(p.y, HEIGHT - 50)); // 50은 캐릭터 세로 크기
         }
     }
 
@@ -278,23 +278,23 @@ public class GameServer {
             int side = rand.nextInt(4);
             int spawnX = 0, spawnY = 0;
             switch (side) {
-                case 0:
-                    spawnX = -100;
-                    spawnY = rand.nextInt(HEIGHT);
-                    break;
-                case 1:
-                    spawnX = WIDTH;
-                    spawnY = rand.nextInt(HEIGHT);
-                    break;
-                case 2:
-                    spawnX = rand.nextInt(WIDTH);
-                    spawnY = -100;
-                    break;
-                case 3:
-                    spawnX = rand.nextInt(WIDTH);
-                    spawnY = HEIGHT;
-                    break;
-            }
+            case 0:
+                spawnX = -100;
+                spawnY = 130 + rand.nextInt(HEIGHT - 130);
+                break;
+            case 1:
+                spawnX = WIDTH;
+                spawnY = 130 + rand.nextInt(HEIGHT - 130);
+                break;
+            case 2:
+                spawnX = rand.nextInt(WIDTH);
+                spawnY = HEIGHT;
+                break;
+            case 3:
+                spawnX = rand.nextInt(WIDTH);
+                spawnY = HEIGHT;
+                break;
+        }
             enemies.add(new Enemy(spawnX, spawnY));
         }
     }
