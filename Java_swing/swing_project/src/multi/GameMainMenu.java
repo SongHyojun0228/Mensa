@@ -25,12 +25,13 @@ public class GameMainMenu extends JFrame {
         // 플레이어 이름 입력 필드**
         nameField = new JTextField("Guest" + (int) (Math.random() * 10000));
         nameField.setBounds(500, 500, 300, 40);
-        nameField.setFont(new Font("Arial", Font.BOLD, 20));
+        // 폰트 변경
+        nameField.setFont(new Font("Dialog", Font.BOLD, 20));
 
         // 게임 시작 버튼**
         startButton = new JButton("Game Start");
         startButton.setBounds(550, 560, 200, 50);
-        startButton.setFont(new Font("Arial", Font.BOLD, 20));
+        startButton.setFont(new Font("Dialog", Font.BOLD, 20));
 
         // 버튼 클릭 이벤트**
         startButton.addActionListener(new ActionListener() {

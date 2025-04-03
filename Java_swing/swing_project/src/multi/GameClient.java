@@ -284,8 +284,13 @@ class GamePanel extends JPanel implements KeyListener {
             Image baseImage = isMoving ? getCharacterFrame(currentFrame) : idleImage;
             Image playerImage = p.facingRight ? baseImage : flipImage((BufferedImage) baseImage);
 
+         // 이름을 캐릭터 중심에 정렬되도록 조정**
+            FontMetrics fm = g.getFontMetrics();
+            int textWidth = fm.stringWidth(p.id);
+            int nameX = p.x + (CHARACTER_WIDTH - textWidth) / 2;
             g.setColor(Color.WHITE);
-            g.drawString(p.id, p.x, p.y + CHARACTER_HEIGHT + 10);
+            g.drawString(p.id, nameX, p.y + CHARACTER_HEIGHT + 10);
+
             drawBar(g, p.x, p.y - 15, CHARACTER_WIDTH, 10, p.health, Color.RED);
             drawBar(g, p.x, p.y - 5, CHARACTER_WIDTH, 4, p.mp, Color.BLUE);
 
