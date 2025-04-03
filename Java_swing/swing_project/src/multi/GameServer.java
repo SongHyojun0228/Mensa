@@ -139,6 +139,15 @@ public class GameServer {
     // 게임 루프 : 상태 업데이트 후 모든 클라이언트에 브로드캐스트 (30FPS)
     private void gameLoop() {
         while (true) {
+            if (players.isEmpty()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+
             long startTime = System.currentTimeMillis();
             updatePlayers();
             updateEnemies();
