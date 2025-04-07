@@ -42,7 +42,7 @@ public class GameClient extends JFrame {
     private void connectToServer() {
         try {
             // IP : 192.168.107.10로 수정 (학원 IP)
-            socket = new Socket("192.168.107.5", 7777);
+            socket = new Socket("127.0.0.1", 7777);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
             out.writeObject(playerName);
@@ -104,6 +104,8 @@ class GamePanel extends JPanel implements KeyListener {
     private Timer hitEffectTimer;
     private int hitEffectCounter = 0;
 
+    private List<DeathEffect> deathEffects = new ArrayList<>();
+
     public void setOutputStream(ObjectOutputStream out) {
         this.out = out;
     }
@@ -152,6 +154,14 @@ class GamePanel extends JPanel implements KeyListener {
         bullets = (List<GameServer.Bullet>) state.get("bullets");
 
         for (GameServer.Player p : players) {// *죽는 이펙스 실행 */
+
+            if (p.isDead) {
+                boolean alreadyAdded = deathEffects.stream().anyMatch(d -> d.startTime == p.deathTime && d.x == p.x);
+                if (!alreadyAdded) {
+                    deathEffects.add(new DeathEffect(p.x, p.y, p.deathTime));
+                }
+            }
+
             if (p.id.equals(playerId)) {
                 if (!isDead && p.isDead) {
                     deathX = p.x;
@@ -256,8 +266,38 @@ class GamePanel extends JPanel implements KeyListener {
         }
     }
 
+    public class DeathEffect {
+        int x, y;
+        long startTime;
+        int frameIndex = 0;
+        boolean finished = false;
+        private static final int FRAME_COUNT = 8;
+        private static final int FRAME_DURATION = 150;
+
+        public DeathEffect(int x, int y, long startTime) {
+            this.x = x;
+            this.y = y;
+            this.startTime = startTime;
+        }
+
+        public void update() {
+            long elapsed = System.currentTimeMillis() - startTime;
+            frameIndex = (int) (elapsed / FRAME_DURATION);
+            if (frameIndex >= FRAME_COUNT) {
+                finished = true;
+            }
+        }
+
+        public void draw(Graphics g, List<BufferedImage> deathFrames) {
+            if (!finished && frameIndex < deathFrames.size()) {
+                g.drawImage(deathFrames.get(frameIndex), x, y, 50, 50, null);
+            }
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
+
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g; // 이펙트 툴**
         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
@@ -280,11 +320,14 @@ class GamePanel extends JPanel implements KeyListener {
         }
 
         for (GameServer.Player p : players) {
+            if (p.isDead)
+                continue; // 죽은 플레이어는 다시 안그릴거임
+
             boolean isMoving = !p.keys.isEmpty();
             Image baseImage = isMoving ? getCharacterFrame(currentFrame) : idleImage;
             Image playerImage = p.facingRight ? baseImage : flipImage((BufferedImage) baseImage);
 
-         // 이름을 캐릭터 중심에 정렬되도록 조정**
+            // 이름을 캐릭터 중심에 정렬되도록 조정**
             FontMetrics fm = g.getFontMetrics();
             int textWidth = fm.stringWidth(p.id);
             int nameX = p.x + (CHARACTER_WIDTH - textWidth) / 2;
@@ -295,10 +338,27 @@ class GamePanel extends JPanel implements KeyListener {
             drawBar(g, p.x, p.y - 5, CHARACTER_WIDTH, 4, p.mp, Color.BLUE);
 
             // 플레이어 그리는 로직 수정, 위에 기본값으로 그려주던걸 삭제하고 hitEffectCouter가 짝수이면 안보이게함
-            if (!(p.isHit && (hitEffectCounter % 2 == 0))) {
-                g.drawImage(playerImage, p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+            if (p.isDead) {
+                int frameIdx = deathFrameIndex % deathFrames.size(); // 모든 죽은 플레이어에 공통 deathFrame 사용
+                g.drawImage(deathFrames.get(frameIdx), p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+            } else {
+                if (!(p.isHit && (hitEffectCounter % 2 == 0))) {
+                    g.drawImage(playerImage, p.x, p.y, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+                }
             }
         }
+
+        // 뒤지는 플레이어 같이 그려주기
+        Iterator<DeathEffect> it = deathEffects.iterator();
+        while (it.hasNext()) {
+            DeathEffect d = it.next();
+            d.update();
+            d.draw(g, deathFrames);
+            if (d.finished) {
+                it.remove();
+            }
+        }
+
         for (GameServer.Enemy enemy : enemies) {
             g.drawImage(getEnemyFrame(enemy.frame), enemy.x, enemy.y, 100, 100, this);
         }

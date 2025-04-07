@@ -29,6 +29,7 @@ public class GameServer {
         public Set<String> keys = new HashSet<>(); // 누르고 있는 키 목록
         public boolean isDead = false; // 사망 여부 추가**
         public boolean isHit = false; // 추가**
+        public long deathTime = 0;
     }
 
     // 슬라임(Enemy) 몬스터 객체
@@ -258,6 +259,7 @@ public class GameServer {
                 p.isHit = true; // 피격 효과 활성화**
                 if (p.health == 0) {
                     p.isDead = true; // 체력이 0이면 사망 처리**
+                    p.deathTime = System.currentTimeMillis(); // 죽은 시점 기록
                 }
             }
 
