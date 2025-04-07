@@ -18,7 +18,7 @@ public class GameMainMenu extends JFrame {
         setLayout(null);
 
         // 배경 이미지 설정**
-        ImageIcon backgroundImage = new ImageIcon(getClass().getResource("/images/스윙게임 메인화면.png"));
+        ImageIcon backgroundImage = new ImageIcon(getClass().getResource("/images/메인화면2.png"));
         backgroundLabel = new JLabel(backgroundImage);
         backgroundLabel.setBounds(0, 0, 1280, 720);
 

@@ -42,7 +42,7 @@ public class GameClient extends JFrame {
     private void connectToServer() {
         try {
             // IP : 192.168.107.10로 수정 (학원 IP)
-            socket = new Socket("127.0.0.1", 7777);
+            socket = new Socket("192.168.107.5", 7777);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
             out.writeObject(playerName);
