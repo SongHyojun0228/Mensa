@@ -107,6 +107,8 @@ class GamePanel extends JPanel implements KeyListener {
     private List<DeathEffect> deathEffects = new ArrayList<>();
     int myScore = 0;
     List<ScoreText> scoreTexts = new ArrayList<>();
+    Set<Long> handledKillEffects = new HashSet<>();
+    Set<String> handledKillEffectIds = new HashSet<>();
 
     public void setOutputStream(ObjectOutputStream out) {
         this.out = out;
@@ -181,6 +183,13 @@ class GamePanel extends JPanel implements KeyListener {
 
         for (GameServer.Player p : players) {// *죽는 이펙스 실행 */
 
+            for (GameServer.KillEffect ke : p.killEffects) {
+                if (!handledKillEffectIds.contains(ke.uuid)) {
+                    scoreTexts.add(new ScoreText(ke.x, ke.y, "+100"));
+                    handledKillEffectIds.add(ke.uuid);
+                }
+            }
+
             if (p.isDead) {
                 boolean alreadyAdded = deathEffects.stream().anyMatch(d -> d.startTime == p.deathTime && d.x == p.x);
                 if (!alreadyAdded) {
@@ -195,10 +204,13 @@ class GamePanel extends JPanel implements KeyListener {
                     startDeathAnimation();
                 }
 
-                // 중복 방지: 이전에 처리한 시간보다 클 때만 +100 표시
-                if (p.lastKillTime > lastKillHandledTime) {
-                    scoreTexts.add(new ScoreText(p.lastKillX, p.lastKillY, "+100"));
-                    lastKillHandledTime = p.lastKillTime; // 이번 걸 처리했음
+                Iterator<GameServer.KillEffect> it = p.killEffects.iterator();
+                while (it.hasNext()) {
+                    GameServer.KillEffect ke = it.next();
+                    if (!handledKillEffects.contains(ke.time)) {
+                        scoreTexts.add(new ScoreText(ke.x, ke.y, "+100"));
+                        handledKillEffects.add(ke.time);
+                    }
                 }
 
                 // 피격 시 isHit을 타이머가 끝날 때까지 유지

@@ -17,6 +17,19 @@ public class GameServer {
     // 마지막 슬라임 생성 시간
     private long lastSpawnTime = System.currentTimeMillis();
 
+    public static class KillEffect implements Serializable {
+        public int x, y;
+        public long time;
+        public String uuid; // 고유 ID
+
+        public KillEffect(int x, int y, long time) {
+            this.x = x;
+            this.y = y;
+            this.time = time;
+            this.uuid = UUID.randomUUID().toString(); // 고유 ID 생성
+        }
+    }
+
     // 플레이어 : 각 클라이언트가 제어하는 캐릭터
     public static class Player implements Serializable {
 
@@ -35,6 +48,8 @@ public class GameServer {
         public int lastKillX = -1;
         public int lastKillY = -1;
         public long lastKillTime = 0;
+
+        public List<KillEffect> killEffects = new ArrayList<>();
     }
 
     // 슬라임(Enemy) 몬스터 객체
@@ -400,6 +415,7 @@ public class GameServer {
                         // 슬라임이 죽으면 처리
                         if (e.health <= 0 && !killedEnemies.contains(e)) {
                             killedEnemies.add(e);
+                            p.killEffects.add(new KillEffect(e.x, e.y, System.currentTimeMillis()));
 
                             // MP 회복
                             p.mp = Math.min(100, p.mp + 1);
@@ -458,6 +474,8 @@ public class GameServer {
                         }
 
                         if (nearest != null) {
+
+                            nearest.killEffects.add(new KillEffect(e.x, e.y, System.currentTimeMillis()));
                             // 🔹 MP 회복
                             nearest.mp = Math.min(100, nearest.mp + 1);
 
