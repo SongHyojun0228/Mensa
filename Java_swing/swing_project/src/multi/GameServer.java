@@ -30,6 +30,11 @@ public class GameServer {
         public boolean isDead = false; // 사망 여부 추가**
         public boolean isHit = false; // 추가**
         public long deathTime = 0;
+
+        public int score = 0;
+        public int lastKillX = -1;
+        public int lastKillY = -1;
+        public long lastKillTime = 0;
     }
 
     // 슬라임(Enemy) 몬스터 객체
@@ -382,15 +387,31 @@ public class GameServer {
                 int dx = p.facingRight ? 10 : -10;
                 bullets.add(new Bullet(bulletX, bulletY, dx));
             } else if ("skill".equals(action)) {
-                // ✅ 스킬 데미지 처리
+                // 스킬 데미지 처리
                 int skillCenterX = p.facingRight ? p.x + 70 + 70 : p.x - 160 + 70;
                 int skillCenterY = p.y - 45 + 70;
+                List<Enemy> killedEnemies = new ArrayList<>();
                 for (Enemy e : enemies) {
                     int ex = e.x + 50;
                     int ey = e.y + 50;
                     int distance = (int) Math.sqrt(Math.pow(skillCenterX - ex, 2) + Math.pow(skillCenterY - ey, 2));
                     if (distance < 70) {
                         e.health -= 30;
+                        // 슬라임이 죽으면 처리
+                        if (e.health <= 0 && !killedEnemies.contains(e)) {
+                            killedEnemies.add(e);
+
+                            // MP 회복
+                            p.mp = Math.min(100, p.mp + 1);
+
+                            // 점수 추가
+                            p.score += 100;
+
+                            // 죽인 위치 기록 (클라이언트에서 +100 표시용)
+                            p.lastKillX = e.x;
+                            p.lastKillY = e.y;
+                            p.lastKillTime = System.currentTimeMillis();
+                        }
                     }
                 }
                 enemies.removeIf(e -> e.health <= 0);
@@ -425,7 +446,7 @@ public class GameServer {
                     if (e.health <= 0 && !deadEnemies.contains(e)) {
                         deadEnemies.add(e);
 
-                        // ✅ 슬라임이 죽은 시점에 가장 가까운 플레이어에게 mp 회복
+                        // ✅ 슬라임이 죽은 시점에 가장 가까운 플레이어 찾기
                         Player nearest = null;
                         double minDist = Double.MAX_VALUE;
                         for (Player p : players.values()) {
@@ -435,8 +456,18 @@ public class GameServer {
                                 nearest = p;
                             }
                         }
+
                         if (nearest != null) {
-                            nearest.mp = Math.min(100, nearest.mp + 1); // 🔹 최대 100 제한
+                            // 🔹 MP 회복
+                            nearest.mp = Math.min(100, nearest.mp + 1);
+
+                            // ✅ 점수 추가
+                            nearest.score += 100;
+
+                            // ✅ 죽인 위치 기록 (클라이언트용)
+                            nearest.lastKillX = e.x;
+                            nearest.lastKillY = e.y;
+                            nearest.lastKillTime = System.currentTimeMillis();
                         }
                     }
                 }

@@ -105,9 +105,33 @@ class GamePanel extends JPanel implements KeyListener {
     private int hitEffectCounter = 0;
 
     private List<DeathEffect> deathEffects = new ArrayList<>();
+    int myScore = 0;
+    List<ScoreText> scoreTexts = new ArrayList<>();
 
     public void setOutputStream(ObjectOutputStream out) {
         this.out = out;
+    }
+
+    public class ScoreText {
+        int x, y;
+        long startTime;
+        int duration = 1000; // 1초 동안 표시
+        String text;
+
+        public ScoreText(int x, int y, String text) {
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.startTime = System.currentTimeMillis();
+        }
+
+        public boolean isAlive() {
+            return System.currentTimeMillis() - startTime < duration;
+        }
+
+        public int getYOffset() {
+            return (int) ((System.currentTimeMillis() - startTime) / 10); // 시간에 따라 떠오르게
+        }
     }
 
     public GamePanel(String playerId) {
@@ -148,6 +172,8 @@ class GamePanel extends JPanel implements KeyListener {
         }
     }
 
+    long lastKillHandledTime = 0;
+
     public void updateGameState(Map<String, Object> state) {
         players = (List<GameServer.Player>) state.get("players");
         enemies = (List<GameServer.Enemy>) state.get("enemies");
@@ -168,6 +194,13 @@ class GamePanel extends JPanel implements KeyListener {
                     deathY = p.y;
                     startDeathAnimation();
                 }
+
+                // 중복 방지: 이전에 처리한 시간보다 클 때만 +100 표시
+                if (p.lastKillTime > lastKillHandledTime) {
+                    scoreTexts.add(new ScoreText(p.lastKillX, p.lastKillY, "+100"));
+                    lastKillHandledTime = p.lastKillTime; // 이번 걸 처리했음
+                }
+
                 // 피격 시 isHit을 타이머가 끝날 때까지 유지
                 if (p.isHit) {
                     if (!isHit) {
@@ -177,6 +210,7 @@ class GamePanel extends JPanel implements KeyListener {
                     }
                 }
                 isDead = p.isDead;
+                myScore = p.score;
             }
         }
         repaint();
@@ -370,6 +404,25 @@ class GamePanel extends JPanel implements KeyListener {
                 e.printStackTrace();
             }
         }
+
+        // 점수 텍스트 표시
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.setColor(Color.YELLOW);
+        Iterator<ScoreText> iter = scoreTexts.iterator();
+        while (iter.hasNext()) {
+            ScoreText st = iter.next();
+            if (st.isAlive()) {
+                g.drawString(st.text, st.x, st.y - st.getYOffset());
+            } else {
+                iter.remove();
+            }
+        }
+
+        // 총 점수 왼쪽 위에 표시
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Score: " + myScore, 20, 30);
+
         for (SkillEffect effect : skillEffects) {
             effect.draw(g);
         }
