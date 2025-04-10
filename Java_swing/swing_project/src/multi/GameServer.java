@@ -41,6 +41,9 @@ public class GameServer {
         public long lastHitTime = 0; // 마지막 피격 시간
         public Set<String> keys = new HashSet<>(); // 누르고 있는 키 목록
         public boolean isDead = false; // 사망 여부 추가**
+        public boolean isClear = false;         // 🔹 클리어 여부 추가
+        public long connectTime = System.currentTimeMillis(); // 🔹 접속 시간 저장
+        
         public boolean isHit = false; // 추가**
         public long deathTime = 0;
 
@@ -174,6 +177,7 @@ public class GameServer {
             updateEnemies();
             updateBullets();
             checkDamage();
+            checkClearCondition();
             checkBulletEnemyCollision();
             long now = System.currentTimeMillis();
             if (now - lastSpawnTime >= 10000) {
@@ -221,6 +225,18 @@ public class GameServer {
             p.y += dy;
             p.x = Math.max(0, Math.min(p.x, WIDTH - 50)); // 50은 캐릭터 가로 크기
             p.y = Math.max(130, Math.min(p.y, HEIGHT - 50)); // 50은 캐릭터 세로 크기
+        }
+    }
+    
+    private void checkClearCondition() {
+        long now = System.currentTimeMillis();
+        for (Player p : players.values()) {
+            if (!p.isDead && !p.isClear && (now - p.connectTime >= 10_000)) {
+                p.isClear = true;
+                p.isDead = true;
+                p.deathTime = now;
+                System.out.println(p.id + " 클리어!");
+            }
         }
     }
 

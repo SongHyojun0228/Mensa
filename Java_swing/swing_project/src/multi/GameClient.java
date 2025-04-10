@@ -92,6 +92,11 @@ class GamePanel extends JPanel implements KeyListener {
 
     // 죽는 이펙트 관련**
     private boolean isDead = false;
+    
+    private boolean showClear = false; // 🔹 클리어 출력용
+    private long gameStartTime = System.currentTimeMillis(); // 🔹 생존 시간 표시용
+
+    
     private BufferedImage deathImage;
     private List<BufferedImage> deathFrames = new ArrayList<>();
     private int deathFrameIndex = 0;
@@ -199,6 +204,9 @@ class GamePanel extends JPanel implements KeyListener {
 
             if (p.id.equals(playerId)) {
                 if (!isDead && p.isDead) {
+                	if (p.isClear) {
+                        showClear = true; // 🔹 클리어 플래그 true
+                    }
                     deathX = p.x;
                     deathY = p.y;
                     startDeathAnimation();
@@ -349,21 +357,42 @@ class GamePanel extends JPanel implements KeyListener {
         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 
         if (isDead) {
-            g.drawImage(deathFrames.get(deathFrameIndex), deathX, deathY, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
-            g.setColor(Color.RED);
-            g.setFont(new Font("Arial", Font.BOLD, 50));
-            g.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
+            if (showClear) {
+                g.setColor(Color.GREEN);
+                g.setFont(new Font("Arial", Font.BOLD, 50));
+                g.drawString("CLEAR", getWidth() / 2 - 100, getHeight() / 2);
+            } else {
+                g.drawImage(deathFrames.get(deathFrameIndex), deathX, deathY, CHARACTER_WIDTH, CHARACTER_HEIGHT, this);
+                g.setColor(Color.RED);
+                g.setFont(new Font("Arial", Font.BOLD, 50));
+                g.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
+            }
+            
+            // 🔹 점수와 잡은 슬라임 수 표시
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Dialog", Font.BOLD, 28));
+            String resultText = "Score: " + myScore + "  |  잡은 슬라임 수: " + (myScore / 100);
+            int resultWidth = g.getFontMetrics().stringWidth(resultText);
+            g.drawString(resultText, (getWidth() - resultWidth) / 2, getHeight() / 2 + 50);
+
 
             if (restartButton == null) {
                 restartButton = new JButton("Try again?");
                 restartButton.setFont(new Font("Arial", Font.BOLD, 20));
-                restartButton.setBounds(getWidth() / 2 - 75, getHeight() / 2 + 50, 150, 50);
-                restartButton.addActionListener(e -> restartGame());
+                restartButton.setBounds(getWidth() / 2 - 75, getHeight() / 2 + 100, 150, 50);  // 위치 조금 내림
+                // 메뉴으로 이동
+                restartButton.addActionListener(e -> {
+                    JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    topFrame.dispose(); // 현재 창 닫기
+                    new GameMainMenu(); // 메인 메뉴 열기
+                });
+
                 setLayout(null);
                 add(restartButton);
             }
             return;
         }
+
 
         for (GameServer.Player p : players) {
             if (p.isDead)
@@ -434,6 +463,17 @@ class GamePanel extends JPanel implements KeyListener {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 24));
         g.drawString("Score: " + myScore, 20, 30);
+        
+        // 🔹 생존 시간 화면 상단 중앙에 출력
+        long elapsed = System.currentTimeMillis() - gameStartTime;
+        int seconds = (int)(elapsed / 1000) % 60;
+        int minutes = (int)(elapsed / 1000) / 60;
+        String timerText = String.format("%02d:%02d", minutes, seconds);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 28));
+        int textWidth = g.getFontMetrics().stringWidth(timerText);
+        g.drawString(timerText, (getWidth() - textWidth) / 2, 40);
+
 
         for (SkillEffect effect : skillEffects) {
             effect.draw(g);
