@@ -63,7 +63,7 @@ git clone https://github.com/SongHyojun0228/Mensa.git
 cd Mensa
 ```
 
-<h3>2️⃣ 서버 실행/h3>
+<h3>2️⃣ 서버 실행</h3>
 
 ```
 javac multi/GameServer.java
