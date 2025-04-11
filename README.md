@@ -1,9 +1,6 @@
-# Mensa
+# Java_Swing_Mini_Game : SLIME SURVIVAL
+
 <img width="1276" alt="Image" src="https://github.com/user-attachments/assets/f17275d9-c623-47a2-86c5-656d2f187f68" />
-
-<br>
-
-Java_Swing_Mini_Game : SLIME SURVIVAL
 
 <br>
 <br>
