@@ -31,8 +31,8 @@
       <li>서버에서 게임 로직 처리 (슬라임 이동, 충돌, 점수 계산 등)</li>
     </ul>
   </li>
-  <li>🏁 생존 시간 기반 클리어 판정 (1분 생존 시 클리어 처리)</li>
-  <li>🧟 슬라임 자동 생성 및 추적 로직</li>
+  <li>생존 시간 기반 클리어 판정 (1분 생존 시 클리어 처리)</li>
+  <li>슬라임 자동 생성 및 추적 로직</li>
 </ul>
 
 
@@ -101,7 +101,7 @@ java multi.GameMainMenu
 
 <br><br>
 
-<h2>👨🏻‍💻 기여자</h2>
+<h2>👨🏻‍💻 팀원</h2>
 <ul>
   <li><a href="https://github.com/SongHyojun0228" target="_blank">송효준</a></li>
   <li><a href="https://github.com/walwal123" target="_blank">유승원</a></li>
