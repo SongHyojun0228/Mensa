@@ -4,7 +4,6 @@
 > 실시간 통신 구조 설계 및 구현 경험
 > 클라이언트 측 이벤트 처리 및 UI 표현
 
-![image.png](attachment:24f53ead-0609-42af-a41a-0e1df6fee4a8:image.png)
 
 <br><br>
 
