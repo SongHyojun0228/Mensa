@@ -1,6 +1,8 @@
 # **🎮 Java_Swing_Mini_Game : SLIME SURVIVAL**
 > **자바 스윙을 이용한 미니 게임**
 
+### Notion
+> https://www.notion.so/16513ddc688b806aacb5f59a6befa64e?p=21013ddc688b8046a9cec64b629937f3&pm=c
 
 <br><br>
 
